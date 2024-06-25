@@ -1,0 +1,39 @@
+{% extends "base.html"  %}
+
+{% import 'bootstrap/wtf.html' as wtf %}
+
+{% block content %}
+{% include "flash.html" %}
+    <div class="container">
+        <div class="page-header">
+            <h1>
+                <!-- Hello, {% if name %} {{ name }} 
+                    {% else %} Stranger
+                    {% endif %}! -->
+                Hello, 
+                {% if current_user.is_authenticated %}
+                    {{ current_user.username}}
+                {% else %}
+                    Stranger
+                {% endif %}
+            </h1>
+            {% if not known %}
+            <p>Pleased to meet you!.</p>
+            {% else %}
+            <p>Happy to see you again!</p>
+            {% endif %}
+        </div>
+        {% block page_content %}
+            <div class="page-content">
+                <h2>You have not confirmed your account yet.</h2>
+                <p>
+                    Before you access this site you need to confirm your account. check your inbox, you should
+                    have received an email with a confirmation link.<br>
+                    Need another confirmation email? <a href="url_for('auth.confirm')">Click here</a>
+                </p>
+
+            </div>
+
+        {% endblock %}
+    </div>
+{% endblock %}
