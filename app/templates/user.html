@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Nkblog - {{ user.username }}{% endblock %}
+
+{% block content %}
+{% include "flash.html" %}
+<div class="container" style="border: 1px solid red; border-radius: 10px; padding: 10px;">
+{% block page_content %}
+
+<img src="{{ user.gravatar(size=100) }}" alt="profile image" class="img-fluid img-thumbnail">
+<div class="profile-header">
+    <h1>{{ user.username }}</h1>
+    {% if user.name or user.location %}
+    <p>
+        {% if user.name %}{{ user.name }}{% endif %}
+        {% if user.location %}
+            From <a href="http://maps.google.com/?q={{ user.location }}">
+                {{ user.location }}
+            </a>
+        {% endif %}
+    </p>
+    {% endif %}
+    {% if current_user.is_administrator() %}
+    <p><a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
+    {% endif %}
+    {% if user.about_me %}
+        <p>
+            {{user.about_me}}
+        </p>
+    {% endif %}
+    <p>
+        Member since {{ moment(user.member_since).format('L')}}.
+        Last seen {{ moment(user.last_seen).fromNow(refresh=True)}}
+    </p>
+    {% if user==current_user %}
+    <a href="{{ url_for('.edit_profile') }}" class="btn btn-default">
+        Edit Profile
+    </a>
+    {% endif %}
+    {% if current_user.is_administrator() %}
+    <a href="{{ url_for('.edit_profile_admin') }}" class="btn btn-danger">
+        Edit Profile [Admin]
+    </a>
+    {% endif %}
+</div>
+{% endblock %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{{ moment.include_moment() }} 
+{% endblock %}
