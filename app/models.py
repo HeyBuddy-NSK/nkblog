@@ -5,6 +5,9 @@ from flask import current_app as app
 from flask_login import UserMixin, AnonymousUserMixin
 import jwt
 from time import time
+import datetime
+from flask import request
+import hashlib
 
 # Class to set permissions
 class Permission:
@@ -83,6 +86,14 @@ class User(UserMixin,db.Model):
     username = db.Column(db.String(64),unique=True, index=True)
     role_id = db.Column(db.Integer,db.ForeignKey('roles.id'))
     confirmed = db.Column(db.Boolean, default=False)
+    avatar_hash = db.Column(db.String(32))
+
+    # info about user
+    name = db.Column(db.String(64))
+    location = db.Column(db.String(64))
+    about_me = db.Column(db.Text())
+    member_since = db.Column(db.DateTime(),default=datetime.datetime.now(datetime.timezone.utc))
+    last_seen = db.Column(db.DateTime(),default=datetime.datetime.now(datetime.timezone.utc))
 
     # authentication password
     password_hash = db.Column(db.String(128))
@@ -96,6 +107,11 @@ class User(UserMixin,db.Model):
 
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()
+        
+        if self.email is not None and self.avatar_hash is None:
+            self.avatar_hash = self.gravatar_hash()
+
+
 
     def can(self,perm):
         return self.role is not None and self.role.has_permission(perm)
@@ -122,6 +138,7 @@ class User(UserMixin,db.Model):
         
         return token
     
+    # method to confirm account
     def confirm(self, token):
         try:
             data = jwt.decode(token,app.config['SECRET_KEY'],
@@ -133,7 +150,25 @@ class User(UserMixin,db.Model):
         db.session.add(self)
         return True
     
+    # method to update last seen
+    def ping(self):
+        self.last_seen = datetime.datetime.now(datetime.timezone.utc)
+        db.session.add(self)
+        db.session.commit()
 
+    def gravatar_hash(self):
+        return hashlib.md5(self.email.lower().encode('utf-8')).hexdigest()
+
+    # function to create avatar for user by using email
+    def gravatar(self,size=100,default='identicon',rating='g'):
+        if request.is_secure:
+            url = 'https://secure.gravatar.com/avatar'
+        else:
+            url = 'http://www.gravatar.com/avatar'
+        hash = self.gravatar_hash() or self.avatar_hash
+        avatar_url = f"{url}/{hash}?s={size}&d={default}&r={rating}"
+        # print(avatar_url)
+        return avatar_url
 
 # Function to load user
 @login_manager.user_loader
