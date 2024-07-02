@@ -20,21 +20,16 @@ To set up NKBlog on your local machine, follow these steps:
     cd nkblog
     ```
 
-2. **Set up a virtual environment**:
+2. **Install dependencies**:
     ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+    cd requirements
+    pip install -r dev.txt
     ```
 
-3. **Install dependencies**:
-    ```bash
-    pip install -r requirements.txt
-    ```
-
-4. **Set environment variables**:
+3. **Set environment variables**:
     Create a `.env` file in the root directory and add necessary environment variables as described in `set_environment_variables.bat`.
 
-5. **Run the application**:
+4. **Run the application**:
     ```bash
     python nkblog.py
     ```
