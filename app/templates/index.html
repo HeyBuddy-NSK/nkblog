@@ -1,6 +1,12 @@
 {% extends "base.html"  %}
 
 {% import 'bootstrap/wtf.html' as wtf %}
+{% import '_macros.html' as macros %} 
+
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css')}}">
+{% endblock %}
 
 {% block content %}
 {% include "flash.html" %}
@@ -23,5 +29,20 @@
             <p>Happy to see you again!</p>
             {% endif %}
         </div>
+        <div>
+            {% if current_user.can(Permission.WRITE) %}
+            {{ wtf.quick_form(form) }}
+            {% endif %}
+        </div>
+        {% include "posts.html" %}
+        <div class="pagination">
+            {{ macros.pagination_widget(pagination,'.index') }}
+        </div>
     </div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{{ moment.include_moment() }} 
+{{ pagedown.include_pagedown() }}
 {% endblock %}
