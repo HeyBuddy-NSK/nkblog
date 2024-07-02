@@ -1,12 +1,17 @@
 {% extends 'base.html' %}
 {% block title %}Nkblog - {{ user.username }}{% endblock %}
 
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css')}}">
+{% endblock %}
+
 {% block content %}
 {% include "flash.html" %}
-<div class="container" style="border: 1px solid red; border-radius: 10px; padding: 10px;">
+<div class="container">
 {% block page_content %}
 
-<img src="{{ user.gravatar(size=100) }}" alt="profile image" class="img-fluid img-thumbnail">
+<img src="{{ user.gravatar(size=220) }}" alt="profile image" class="img-fluid img-thumbnail user-profile">
 <div class="profile-header">
     <h1>{{ user.username }}</h1>
     {% if user.name or user.location %}
@@ -42,6 +47,8 @@
     </a>
     {% endif %}
 </div>
+<h3>Posts by {{ user.username }}</h3>
+{% include "posts.html" %}
 {% endblock %}
 </div>
 {% endblock %}
