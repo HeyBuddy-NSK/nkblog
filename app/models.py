@@ -8,6 +8,8 @@ from time import time
 import datetime
 from flask import request
 import hashlib
+from markdown import markdown
+import bleach
 
 # Class to set permissions
 class Permission:
@@ -33,7 +35,7 @@ class Role(db.Model):
     name = db.Column(db.String(64), unique=True)
     default = db.Column(db.Boolean,default=False,index=True)
     permission = db.Column(db.Integer)
-    users = db.relationship('User', backref='role')
+    users = db.relationship('User', backref='role', lazy='dynamic')
 
     def __init__(self,**kwargs):
         super(Role, self).__init__(**kwargs)
@@ -46,7 +48,12 @@ class Role(db.Model):
     # function to add permissions
     def add_permission(self,perm):
         if not self.has_permission(perm):
-            self.permission = perm
+            self.permission += perm
+
+    # remove permissions
+    def remove_permission(self,perm):
+        if self.has_permission(perm):
+            self.permission -= perm
 
     # function to reset permissions
     def reset_permission(self):
@@ -95,6 +102,9 @@ class User(UserMixin,db.Model):
     member_since = db.Column(db.DateTime(),default=datetime.datetime.now(datetime.timezone.utc))
     last_seen = db.Column(db.DateTime(),default=datetime.datetime.now(datetime.timezone.utc))
 
+    # to store posts data
+    posts = db.relationship('Post',backref='author',lazy='dynamic')
+
     # authentication password
     password_hash = db.Column(db.String(128))
     
@@ -107,6 +117,8 @@ class User(UserMixin,db.Model):
 
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()
+                # print(self.role)
+                # print('role set successfully.')
         
         if self.email is not None and self.avatar_hash is None:
             self.avatar_hash = self.gravatar_hash()
@@ -170,6 +182,26 @@ class User(UserMixin,db.Model):
         # print(avatar_url)
         return avatar_url
 
+class Post(db.Model):
+    __tablename__ = 'posts'
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    body_html = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.datetime.now(datetime.timezone.utc))
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    @staticmethod
+    def on_changed_body(target, value, oldvalue, initiator):
+        allowed_tags = ['a','abbr','acronym','b','blockquote','code',
+                        'em','i','li','ol','pre','strong','ul','h1','h2',
+                        'h3']
+        target.body_html = bleach.linkify(bleach.clean(
+            markdown(value,output_format='html'),
+            tags=allowed_tags, strip=True
+        ))
+
+db.event.listen(Post.body,'set',Post.on_changed_body)
+    
 # Function to load user
 @login_manager.user_loader
 def load_user(user_id):
