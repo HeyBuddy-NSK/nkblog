@@ -148,7 +148,7 @@ class User(UserMixin,db.Model):
             self.avatar_hash = self.gravatar_hash()
 
         # making users their own follower
-        self.follow(self)
+        # self.follow(self)
 
     # methods to manage follower and followed.
     def follow(self,user):
