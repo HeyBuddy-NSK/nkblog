@@ -10,7 +10,9 @@
 {% block title %}Nkblog - Post{% endblock %}
 
 {% block content %}
+
     <div class="container">
+    {% include 'flash.html' %}
     {% block page_content %}
     
     {% include 'posts.html' %}

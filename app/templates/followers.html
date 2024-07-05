@@ -5,6 +5,7 @@
 
 {% block content %}
 <div class="container">
+    {% include 'flash.html' %}
 {% block page_content %}
 <div class="page-header">
     <h1>{{ title }} {{ user.username }}</h1>
