@@ -119,7 +119,7 @@ def edit_profile_admin(id):
 
 
 # function to generate permanent link for posts.
-@main.route('/post/<int:id>')
+@main.route('/post/<int:id>', methods=['GET','POST'])
 def post(id):
     post = Post.query.get_or_404(id)
     form = CommentForm()
