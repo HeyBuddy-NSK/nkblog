@@ -1,12 +1,18 @@
 {% extends 'base.html' %}
 {% import 'bootstrap/wtf.html' as wtf %}
 {% import '_macros.html' as macros %}
+{% block styles %}
+{{ super() }}
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css')}}">
+{% endblock %}
+
 
 {% block title %}Nkblog - Post{% endblock %}
 
 {% block content %}
+    <div class="container">
     {% block page_content %}
-
+    
     {% include 'posts.html' %}
     <h4 id="comments">
         Comments
@@ -23,4 +29,5 @@
     </div>
     {% endif %}
     {% endblock %}
+    </div>
 {% endblock %}
