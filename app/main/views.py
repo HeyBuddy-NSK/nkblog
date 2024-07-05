@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import render_template, session, redirect, url_for, flash, request
+from flask import render_template, session, redirect, url_for, flash, request, make_response
 from . import main
 from .. import db
 from .forms import NameForm, EditProfileForm, EditProfileAdminForm, PostForm
@@ -7,7 +7,7 @@ from ..models import User, Role, Permission, Post
 from ..email import send_mail
 from flask import current_app as app, abort
 from flask_login import login_required, current_user
-from ..decorators import admin_required
+from ..decorators import admin_required, permission_required
 
 @main.route('/',methods=['GET','POST'])
 def index():
@@ -41,13 +41,25 @@ def index():
     # posts = Post.query.order_by(Post.timestamp.desc()).all()
     # paginating
     page = request.args.get('page',1,type=int)
-    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
-        page=page, per_page=int(app.config['NLBLOG_POSTS_PER_PAGE']),error_out=False
+
+    show_followed = False
+    if current_user.is_authenticated:
+        show_followed = bool(request.cookies.get('show_followed',''))
+
+    if show_followed:
+        query = current_user.followed_posts
+    else:
+        query = Post.query
+
+    pagination = query.order_by(Post.timestamp.desc()).paginate(
+        page=page, per_page=int(app.config['NKBLOG_POSTS_PER_PAGE']),error_out=False
     )
     posts = pagination.items
 
-    return render_template('index.html',form=form, posts=posts,Permission=Permission, pagination=pagination)
+    return render_template('index.html',form=form, posts=posts,Permission=Permission,
+                           show_followed=show_followed, pagination=pagination)
 
+# function to perform logic for user profile and its posts.
 @main.route('/user/<username>')
 def user(username):
     user = User.query.filter_by(username=username).first_or_404()
@@ -55,7 +67,7 @@ def user(username):
         abort(404)
     
     posts = user.posts.order_by(Post.timestamp.desc()).all()
-    return render_template('user.html',user=user,posts=posts)
+    return render_template('user.html',user=user,posts=posts,Permission=Permission)
 
 
 # function to edit profile of user
@@ -70,13 +82,14 @@ def edit_profile():
         db.session.add(current_user._get_current_object())
         db.session.commit()
         flash('Your profile has been updated.')
-        return redirect(url_for('.user',username=current_user.username))
+        return redirect(url_for('.user',username=current_user.username, Permission=Permission))
     
     form.name.data = current_user.name
     form.location.data = current_user.location
     form.about_me.data = current_user.about_me
     return render_template('edit_profile.html',form=form)
 
+# function to edit profile if user is admin.
 @main.route('/edit-profile/<int:id>',methods=['GET','POST'])
 @login_required
 @admin_required
@@ -94,7 +107,7 @@ def edit_profile_admin(id):
         db.session.add(user)
         db.session.commit()
         flash('Profile has be updated')
-        return redirect(url_for('.user',username=user.username))
+        return redirect(url_for('.user',username=user.username, Permission=Permission))
     form.email.data = user.email
     form.username.data = user.username
     form.confirmed.data = user.confirmed
@@ -132,3 +145,96 @@ def edit(id):
     
     form.body.data = post.body
     return render_template('edit_post.html',form=form)
+
+
+# Functio to perform follow logic.
+@main.route('/follow/<username>')
+@login_required
+@permission_required(Permission.FOLLOW)
+def follow(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('Invalid user.')
+        return redirect(url_for('.index'))
+    
+    if current_user.is_following(user):
+        flash('You are already following this user.')
+        return redirect(url_for('.user',username=username))
+    current_user.follow(user)
+    db.session.commit()
+    flash(f'You are now following {username}.')
+    return redirect(url_for('.user',username=username))
+
+# function to perform unfollow logic
+@main.route('/unfollow/<username>')
+@login_required
+@permission_required(Permission.FOLLOW)
+def unfollow(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('Invalid user.')
+        return redirect(url_for('.index'))
+    
+    if current_user.is_following(user):
+        current_user.unfollow(user)
+        db.session.commit()
+        flash(f'You have unfollowed {username}.')
+        return redirect(url_for('.user',username=username))
+    
+    flash("You are not following this user.")
+    return redirect(url_for('.user',username=username))
+
+# function to get all followers list.
+@main.route('/followers/<username>')
+def followers(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('Invalid user.')
+        return redirect(url_for('.index'))
+    
+    page = request.args.get('page',1,type=int)
+    pagination = user.followers.paginate(
+        page=page, per_page= int(app.config['NKBLOG_POSTS_PER_PAGE']),
+        error_out=False
+    )
+
+    follows = [{'user':item.follower, 'timestamp':item.timestamp}
+               for item in pagination.items]
+    
+    return render_template('followers.html',user=user,title="Followers of",endpoint='.followers',
+                           pagination=pagination,follows=follows)
+
+
+# function to get all following list
+@main.route('/followed_by/<username>')
+def followed_by(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash('Invalid user.')
+        return redirect(url_for('.index'))
+    
+    page = request.args.get('page',1,type=int)
+    pagination = user.followed.paginate(
+        page=page, per_page= int(app.config['NKBLOG_POSTS_PER_PAGE']),
+        error_out = False
+    )
+    follows = [{'user':item.followed,'timestamp':item.timestamp}
+               for item in pagination.items]
+    return render_template('followers.html',user=user,title="Following of",endpoint='.followed_by',
+                           pagination=pagination,follows=follows)
+
+# function to set cookie value for all posts.
+@main.route('/all')
+@login_required
+def show_all():
+    resp = make_response(redirect(url_for('.index')))
+    resp.set_cookie('show_followed', '', max_age=30*24*60*60) # for 30 days.
+    return resp
+
+# function set cookie value for followed posts.
+@main.route('/followed')
+@login_required
+def show_followed():
+    resp = make_response(redirect(url_for('.index')))
+    resp.set_cookie('show_followed','1',max_age=30*24*60*60) # for 30 days
+    return resp
