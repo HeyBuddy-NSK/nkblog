@@ -134,10 +134,10 @@ def post(id):
         redirect(url_for('.post',id=post.id,page=-1))
     page = request.args.get('page',1,type=int)
     if page==-1:
-        page = (post.comments.count() - 1 )// app.config['NKBLOG_COMMENTS_PER_PAGE'] + 1
+        page = (post.comments.count() - 1 )// int(app.config['NKBLOG_COMMENTS_PER_PAGE']) + 1
     
     pagination = post.comments.order_by(Comment.timestamp.asc()).paginate(
-        page=page,per_page=app.config['NKBLOG_COMMENTS_PER_PAGE'],
+        page=page,per_page=int(app.config['NKBLOG_COMMENTS_PER_PAGE']),
         error_out=False
     )
     comments = pagination.items
@@ -265,7 +265,7 @@ def show_followed():
 def moderate():
     page = request.args.get('page',1,type=int)
     pagination = Comment.query.order_by(Comment.timestamp.desc()).paginate(
-        page=page,per_page=app.config['NKBLOG_COMMENTS_PER_PAGE'],
+        page=page,per_page=int(app.config['NKBLOG_COMMENTS_PER_PAGE']),
         error_out=False
     )
     comments = pagination.items
