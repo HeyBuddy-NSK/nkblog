@@ -87,7 +87,7 @@ def edit_profile():
     form.name.data = current_user.name
     form.location.data = current_user.location
     form.about_me.data = current_user.about_me
-    return render_template('edit_profile.html',form=form)
+    return render_template('edit_profile.html',form=form,Permission=Permission)
 
 # function to edit profile if user is admin.
 @main.route('/edit-profile/<int:id>',methods=['GET','POST'])
@@ -115,7 +115,7 @@ def edit_profile_admin(id):
     form.name.data = user.name
     form.location.data = user.location
     form.about_me.data = user.about_me
-    return render_template('edit_profile.html',form=form,user=user)
+    return render_template('edit_profile.html',form=form,user=user,Permission=Permission)
 
 
 # function to generate permanent link for posts.
@@ -163,7 +163,7 @@ def edit(id):
         return redirect(url_for('.post',id=post.id))
     
     form.body.data = post.body
-    return render_template('edit_post.html',form=form)
+    return render_template('edit_post.html',form=form,Permission=Permission)
 
 
 # Functio to perform follow logic.
@@ -221,7 +221,7 @@ def followers(username):
                for item in pagination.items]
     
     return render_template('followers.html',user=user,title="Followers of",endpoint='.followers',
-                           pagination=pagination,follows=follows)
+                           pagination=pagination,follows=follows,Permission=Permission)
 
 
 # function to get all following list
@@ -240,7 +240,7 @@ def followed_by(username):
     follows = [{'user':item.followed,'timestamp':item.timestamp}
                for item in pagination.items]
     return render_template('followers.html',user=user,title="Following of",endpoint='.followed_by',
-                           pagination=pagination,follows=follows)
+                           pagination=pagination,follows=follows,Permission=Permission)
 
 # function to set cookie value for all posts.
 @main.route('/all')
