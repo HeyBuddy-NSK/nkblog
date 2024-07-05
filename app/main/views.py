@@ -2,8 +2,8 @@ from datetime import datetime
 from flask import render_template, session, redirect, url_for, flash, request, make_response
 from . import main
 from .. import db
-from .forms import NameForm, EditProfileForm, EditProfileAdminForm, PostForm
-from ..models import User, Role, Permission, Post
+from .forms import NameForm, EditProfileForm, EditProfileAdminForm, PostForm, CommentForm
+from ..models import User, Role, Permission, Post, Comment
 from ..email import send_mail
 from flask import current_app as app, abort
 from flask_login import login_required, current_user
@@ -122,7 +122,26 @@ def edit_profile_admin(id):
 @main.route('/post/<int:id>')
 def post(id):
     post = Post.query.get_or_404(id)
-    return render_template('post.html',posts=[post])
+    form = CommentForm()
+    if form.validate_on_submit():
+        comment = Comment(body=form.body.data,
+                          post=post,
+                          author=current_user._get_current_object())
+        
+        db.session.add(comment)
+        db.session.commit()
+        flash('You comment has been published.')
+        redirect(url_for('.post',id=post.id,page=-1))
+    page = request.args.get('page',1,type=int)
+    if page==-1:
+        page = (post.comments.count() - 1 )// app.config['NKBLOG_COMMENTS_PER_PAGE'] + 1
+    
+    pagination = post.comments.order_by(Comment.timestamp.asc()).paginate(
+        page=page,per_page=app.config['NKBLOG_COMMENTS_PER_PAGE'],
+        error_out=False
+    )
+    comments = pagination.items
+    return render_template('post.html',posts=[post],form=form,comments=comments,pagination=pagination)
 
 
 # function to edit posts in db and render the template to edit the post.
