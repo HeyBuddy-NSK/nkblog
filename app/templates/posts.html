@@ -16,11 +16,13 @@
                 </a>
             </div>
             <div class="post-body">
+                <a href="{{ url_for('.post', username=post.id) }}" class="post-link"></a>
                 {% if post.body_html %}
                     {{ post.body_html | safe }}
                 {% else %}
                     {{ post.body }}
                 {% endif %}
+                </a>
             </div>
             <div class="post-footer">
                 <a href="{{ url_for('.post',id=post.id)}}">
