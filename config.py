@@ -12,7 +12,7 @@ class Config:
     NKBLOG_MAIL_SUBJECT_PREFIX = '[Nkblog]'
     NKBLOG_MAIL_SENDER = 'Nkblog Admin nk@nkblog.com'
     NKBLOG_ADMIN = os.environ.get('NKBLOG_ADMIN')
-    NLBLOG_POSTS_PER_PAGE = os.environ.get('NLBLOG_POSTS_PER_PAGE')
+    NKBLOG_POSTS_PER_PAGE = os.environ.get('NKBLOG_POSTS_PER_PAGE')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # DEBUG = os.environ.get('DEBUG','1').lower() in ['true','on','1','True','TRUE']
 
