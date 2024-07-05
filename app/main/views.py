@@ -141,7 +141,7 @@ def post(id):
         error_out=False
     )
     comments = pagination.items
-    return render_template('post.html',posts=[post],form=form,comments=comments,pagination=pagination)
+    return render_template('post.html',posts=[post],form=form,comments=comments,pagination=pagination, Permission=Permission)
 
 
 # function to edit posts in db and render the template to edit the post.
