@@ -131,7 +131,7 @@ def post(id):
         db.session.add(comment)
         db.session.commit()
         flash('You comment has been published.')
-        redirect(url_for('.post',id=post.id,page=-1))
+        return redirect(url_for('.post',id=post.id,page=-1))
     page = request.args.get('page',1,type=int)
     if page==-1:
         page = (post.comments.count() - 1 )// int(app.config['NKBLOG_COMMENTS_PER_PAGE']) + 1
