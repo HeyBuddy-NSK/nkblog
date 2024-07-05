@@ -4,10 +4,13 @@ ul.posts {
     margin: 16px 0px 0px 0px;
     border-top: 1px solid #e0e0e0;
 }
-
-/* .profile-thumbnail {
+.profile-thumbnail {
     position: absolute;
-} */
+}
+.profile-header {
+    min-height: 260px;
+    margin-left: 280px;
+}
 
 .user-profile{
     position: absolute;
