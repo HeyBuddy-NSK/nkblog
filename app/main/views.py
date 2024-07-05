@@ -257,3 +257,16 @@ def show_followed():
     resp = make_response(redirect(url_for('.index')))
     resp.set_cookie('show_followed','1',max_age=30*24*60*60) # for 30 days
     return resp
+
+# function to moderate comments
+@main.route('/moderate')
+@login_required
+@permission_required(Permission.MODERATE)
+def moderate():
+    page = request.args.get('page',1,type=int)
+    pagination = Comment.query.order_by(Comment.timestamp.desc()).paginate(
+        page=page,per_page=app.config['NKBLOG_COMMENTS_PER_PAGE'],
+        error_out=False
+    )
+    comments = pagination.items
+    return render_template('moderate.html',comments=comments, pagination=pagination, page=page)
