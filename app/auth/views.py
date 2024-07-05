@@ -1,7 +1,7 @@
 from flask import render_template, redirect, request, url_for, flash
 from . import auth
 from flask_login import login_user, logout_user, login_required, current_user
-from ..models import User
+from ..models import User,Permission
 from .forms import LoginForm, RegistrationForm
 from app import db
 from ..email import send_mail
@@ -19,7 +19,7 @@ def login():
             return redirect(next)
         flash('Invalid Username or Password.')
 
-    return render_template('auth/login.html',login_form=login_form)
+    return render_template('auth/login.html',login_form=login_form,Permission=Permission)
 
 
 @auth.route('/logout')
@@ -46,7 +46,7 @@ def register():
         flash('A confirmation mail has been sent to you by mail.')
         return redirect(url_for('auth.login'))
     
-    return render_template('auth/register.html',reg_form=reg_form)
+    return render_template('auth/register.html',reg_form=reg_form,Permission=Permission)
 
 
 @auth.route('/confirm/<token>')
@@ -74,7 +74,7 @@ def before_request():
 def unconfirmed():
     if current_user.is_anonymous or current_user.confirmed:
         return redirect(url_for('main.index'))
-    return render_template('auth/unconfirmed.html')
+    return render_template('auth/unconfirmed.html',Permission=Permission)
 
 @auth.route('/confirm')
 @login_required
