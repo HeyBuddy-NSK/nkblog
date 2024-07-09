@@ -9,3 +9,9 @@ def page_not_found(e):
         return response
     
     return render_template('404.html'),404
+
+
+def forbidden(message):
+    response = jsonify({'error':'forbidden', 'message':message})
+    response.status_code = 403
+    return response
