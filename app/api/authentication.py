@@ -3,7 +3,7 @@ from . import api
 basic_auth = HTTPBasicAuth()
 from app.models import User
 from flask import g
-from .errors import unauthorized
+from .errors import unauthorized, forbidden
 
 @basic_auth.verify_password
 def verify_password(email,password):
@@ -27,3 +27,13 @@ def auth_error():
 @basic_auth.login_required
 def get_posts():
     pass
+
+@api.before_request
+@basic_auth.login_required
+def before_request():
+    """
+    Authentication will be done automatically for all the routes in bluprint.
+    Also it reject authorized user who have not confirmed their account.
+    """
+    if not g.current_user.is_anonymous and not g.current_user.confirmed:
+        return forbidden('unconfirmed account.')
