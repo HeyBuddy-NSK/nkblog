@@ -221,6 +221,10 @@ class User(UserMixin,db.Model):
             
         except:
             return False
+        
+        if data.get('confirm') != self.id:
+            return False
+        
         self.confirmed = True
         db.session.add(self)
         return True
@@ -244,6 +248,20 @@ class User(UserMixin,db.Model):
         avatar_url = f"{url}/{hash}?s={size}&d={default}&r={rating}"
         # print(avatar_url)
         return avatar_url
+    
+    # method to generate authentication token
+    def generate_auth_token(self,expiration):
+        auth_token = jwt.encode({'id':self.id, 'exp': time()+expiration},app.config['SECRET_KEY'],algorithm='HS256')
+        return auth_token
+    
+    @staticmethod
+    def verify_auth_token(auth_token):
+        try:
+            data = jwt.decode(auth_token,app.config['SECRET_KEY'],algorithms='HS256')['id']
+        except:
+            return None
+        
+        return User.query.get(data)
 
 
 # db table to store posts data.
