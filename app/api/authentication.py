@@ -7,6 +7,9 @@ from .errors import unauthorized, forbidden
 
 @basic_auth.verify_password
 def verify_password(email,password):
+    """
+    Verifies the password of user.
+    """
     if email == '':
         return False
     
@@ -18,14 +21,19 @@ def verify_password(email,password):
     return user.verify_password(password)
 
 # HTTPauth error handler
-from .errors import unauthorized
 @basic_auth.error_handler
 def auth_error():
+    """
+    Handles the authentication error.
+    """
     return unauthorized('Invalid Credentials')
 
 @api.route('/posts/')
 @basic_auth.login_required
 def get_posts():
+    """
+    Get posts from the database.
+    """
     pass
 
 @api.before_request
