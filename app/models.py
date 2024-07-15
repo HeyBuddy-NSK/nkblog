@@ -6,10 +6,11 @@ from flask_login import UserMixin, AnonymousUserMixin
 import jwt
 from time import time
 import datetime
-from flask import request
+from flask import request, url_for
 import hashlib
 from markdown import markdown
 import bleach
+from app.exceptions import ValidationError
 
 # Class to set permissions
 class Permission:
@@ -254,6 +255,7 @@ class User(UserMixin,db.Model):
         auth_token = jwt.encode({'id':self.id, 'exp': time()+expiration},app.config['SECRET_KEY'],algorithm='HS256')
         return auth_token
     
+    # method to verify authentication token
     @staticmethod
     def verify_auth_token(auth_token):
         try:
@@ -262,6 +264,22 @@ class User(UserMixin,db.Model):
             return None
         
         return User.query.get(data)
+    
+    def to_json(self):
+        """
+        Converts user to json format.
+        """
+        json_user = {
+            'url':url_for('api.get_user',id=self.id),
+            'username':self.username,
+            'member_since':self.member_since,
+            'last_seen':self.last_seen,
+            'posts_url':url_for('api.get_user_posts',id=self.id),
+            'followed_posts_url':url_for('api.get_user_followed_posts',id=self.id),
+            'post_count':self.posts.count()
+        }
+
+        return json_user
 
 
 # db table to store posts data.
@@ -285,6 +303,31 @@ class Post(db.Model):
             markdown(value,output_format='html'),
             tags=allowed_tags, strip=True
         ))
+
+    def to_json(self):
+        """
+        converts post to json format.
+        """
+        json_post = {
+            'url':url_for('api.get_post',id=self.id),
+            'body':self.body,
+            'body_html':self.body_html,
+            'timestamp':self.timestamp,
+            'author_url':url_for('api.get_user',id=self.author_id),
+            'comments_url':url_for('api.get_post_comments',id=self.id),
+            'comment_count':self.comments.count()
+        }
+
+        return json_post
+    
+    # method to convert json back to post or original
+    @staticmethod
+    def from_json(json_post):
+        body = json_post.get('body')
+        if body is None or body == '':
+            raise ValidationError('Post does not have a boddy.')
+        
+        return Post(body=body)
 
 db.event.listen(Post.body,'set',Post.on_changed_body)
 
