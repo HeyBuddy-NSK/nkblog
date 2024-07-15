@@ -6,4 +6,5 @@ set /p MAIL_PASSWORD= Enter password for mail id ::
 set /p NKBLOG_ADMIN= Enter mail id of admin :: 
 set /p DEBUG= Do you want debug on ( 1 or 0) :: 
 set /p NKBLOG_POSTS_PER_PAGE= Enter No of posts per page :: 
+set /p NKBLOG_COMMENTS_PER_PAGE = Enter No of comments per page :: 
 pause
