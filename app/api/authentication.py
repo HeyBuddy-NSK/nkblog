@@ -41,7 +41,7 @@ def verify_password(email_or_token,password):
     
     g.current_user = user
     g.token_used = False
-    return User.verify_password(password)
+    return user.verify_password(password)
 
 # HTTPauth error handler
 @basic_auth.error_handler
@@ -51,13 +51,13 @@ def auth_error():
     """
     return unauthorized('Invalid Credentials')
 
-@api.route('/posts/')
-@basic_auth.login_required
-def get_posts():
-    """
-    Get posts from the database.
-    """
-    pass
+# @api.route('/posts/')
+# @basic_auth.login_required
+# def get_posts():
+#     """
+#     Get posts from the database.
+#     """
+#     pass
 
 @api.before_request
 @basic_auth.login_required
