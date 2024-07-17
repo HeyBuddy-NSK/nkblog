@@ -15,7 +15,7 @@ class Config:
     NKBLOG_POSTS_PER_PAGE = os.environ.get('NKBLOG_POSTS_PER_PAGE')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     NKBLOG_COMMENTS_PER_PAGE = os.environ.get('NKBLOG_COMMENTS_PER_PAGE')
-    
+    FLASK_COVERAGE = os.environ.get('FLASK_COVERAGE')
     # DEBUG = os.environ.get('DEBUG','1').lower() in ['true','on','1','True','TRUE']
 
     @staticmethod
