@@ -222,8 +222,8 @@ class User(UserMixin,db.Model):
             
         except:
             return False
-        
-        if data.get('confirm') != self.id:
+        # print(f"data ==== {data}")
+        if data != self.id:
             return False
         
         self.confirmed = True
