@@ -290,3 +290,15 @@ def moderate_disable(id):
     comment.disabled=True
     db.session.add(comment)
     return redirect(url_for('.moderate',page=request.args.get('page',1,type=int)))
+
+# manual shutdown route
+@main.route('/shutdown')
+def server_shutdown():
+    if not app.testing:
+        abort(404)
+
+    shutdown = request.environ.get('werkzeug.server.shutdown')
+    if not shutdown:
+        abort(500)
+    shutdown()
+    return 'Shutting down...'
