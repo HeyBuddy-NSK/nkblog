@@ -302,3 +302,17 @@ def server_shutdown():
         abort(500)
     shutdown()
     return 'Shutting down...'
+
+
+# reporting slow database queries.
+from flask_sqlalchemy.record_queries import get_recorded_queries
+
+@main.after_app_request
+def after_request(response):
+    for query in get_recorded_queries():
+        if query.duration >= app.config['NKBLOG_SLOW_DB_QUERY_TIME']:
+            app.logger.warning(
+                f'Slow query: {query.statement}\nParameters: {query.parameters}\nDuration: {query.duration}\nContext: {query.context}'
+            )
+
+    return response
