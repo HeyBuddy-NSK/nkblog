@@ -17,7 +17,23 @@ class Config:
     NKBLOG_COMMENTS_PER_PAGE = os.environ.get('NKBLOG_COMMENTS_PER_PAGE')
     FLASK_COVERAGE = os.environ.get('FLASK_COVERAGE')
     SERVER_NAME = '127.0.0.1:5000'
+    SQLALCHEMY_RECORD_QUERIES = True
+    NKBLOG_SLOW_DB_QUERY_TIME = 0.5
     # DEBUG = os.environ.get('DEBUG','1').lower() in ['true','on','1','True','TRUE']
+
+    # Flask-Profiler configuration
+    FLASK_PROFILER = {
+        "enabled": True,
+        "storage": {
+            "engine": "sqlite"
+        },
+        "basicAuth": {
+            "enabled": False
+        },
+        "ignore": [
+            "^/static/.*"
+        ]
+    }
 
     @staticmethod
     def init_app(app):
