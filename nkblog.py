@@ -1,7 +1,7 @@
 import os
 from app import create_app, db
 from app.models import User, Role
-from flask_migrate import Migrate
+from flask_migrate import Migrate, upgrade
 import sys
 import click
 
@@ -65,6 +65,16 @@ def profile(length,profile_dir):
     app.wsgi_app = ProfilerMiddleware(app.wsgi_app, restrictions=[length],profile_dir=profile_dir)
     
     app.run()
+
+
+@app.cli.command()
+def deploy():
+    """running deployment tasks."""
+    # to migrate database to lates.
+    upgrade()
+
+    # to create or update user roles
+    Role.insert_roles()
 
 
 if __name__ == "__main__":
