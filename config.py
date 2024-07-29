@@ -16,7 +16,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     NKBLOG_COMMENTS_PER_PAGE = os.environ.get('NKBLOG_COMMENTS_PER_PAGE')
     FLASK_COVERAGE = os.environ.get('FLASK_COVERAGE')
-    SERVER_NAME = '127.0.0.1:5000'
+    SERVER_NAME = os.environ.get('SERVER_NAME') # '127.0.0.1:5000'
     SQLALCHEMY_RECORD_QUERIES = True
     NKBLOG_SLOW_DB_QUERY_TIME = 0.5
     # DEBUG = os.environ.get('DEBUG','1').lower() in ['true','on','1','True','TRUE']
@@ -66,7 +66,7 @@ class ProductionConfig(Config):
         if getattr(cls, 'MAIL_USERNAME', None) is not None:
             credentials = (cls.MAIL_USERNAME, cls.MAIL_PASSWORD)
             if getattr(cls, 'MAIL_USE_TLS', None):
-                secure()
+                secure = ()
         
         mail_handler = SMTPHandler(mailhost=(cls.MAIL_SERVER, cls.MAIL_PORT),
                                    fromaddr=cls.NKBLOG_MAIL_SENDER,
@@ -77,12 +77,24 @@ class ProductionConfig(Config):
         
         mail_handler.setLevel(logging.ERROR)
         app.logger.addHandler(mail_handler)
-    
+
+class DockerConfig(ProductionConfig):
+    @classmethod
+    def init_app(cls,app):
+        ProductionConfig.init_app(app)
+
+        # log to stder
+        import logging
+        from logging import StreamHandler
+        file_handler = StreamHandler()
+        file_handler.setLevel(logging.INFO)
+        app.logger.addHandler(file_handler)
 
 config = {
 
     'development' : DevelopmentConfig,
     'testing' : TestingConfig,
     'production' : ProductionConfig,
-    'default' : DevelopmentConfig
+    'default' : DevelopmentConfig,
+    'docker' : DockerConfig
 }
