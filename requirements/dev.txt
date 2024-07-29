@@ -1,2 +1,7 @@
 -r common.txt
-faker==26.0.0
+bleach==4.1.0
+click==8.1.7
+httpie==3.2.3
+Faker==26.0.0
+mock==5.1.0
+selenium==4.23.1
